@@ -76,9 +76,9 @@ class point:
             self.thetaYaw = math.atan(self.xRelative/self.zRelative) + yaw
         self.adjacent = self.yawHypotenuse * math.cos(self.thetaYaw)
         self.thetaPitch = pitch + 1.5708
-        self.xRelative = self.yawHypotenuse * math.sin(self.thetaYaw+0.002*self.xRelative)
-        self.yRelative = self.adjacent * math.cos(self.thetaPitch+0.001*self.zRelative+0.1*pitch) + self.yPitchVector
-        self.zRelative = self.adjacent * math.sin(self.thetaPitch+0.001*self.yRelative+0.1*yaw) + self.zPitchVector
+        self.xRelative = self.yawHypotenuse * math.sin(self.thetaYaw)
+        self.yRelative = self.adjacent * math.cos(self.thetaPitch) + self.yPitchVector
+        self.zRelative = self.adjacent * math.sin(self.thetaPitch) + self.zPitchVector
         return self
     def projectTo2D(self):
         if self.zRelative <= 1:#A temporary solution that I need to fix
