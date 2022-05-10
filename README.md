@@ -6,4 +6,5 @@ As of 5/10/22, this module can work with the pygame library to create and displa
 Simple download this module and place it in the directory of whatever project you're working on.  You will also need to install the following:
 1. pygame
 2. numpy
+
 In the future, this may turn into an actual library as I add more features.
