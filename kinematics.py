@@ -34,10 +34,10 @@ class kinematicsClass:
         return self.xVel
     def getYDisplacement(self):
         pressed = pygame.key.get_pressed()
-        self.fallVel += self.yTimer.elapsedTime()*-10
         if pressed[pygame.K_SPACE] and self.onGround:
             self.jumpVel = 700
-        self.yVel = self.fallVel + self.yTimer.elapsedTime()*self.jumpVel #Something's wrong with the fallVel - when you take that away the player moves up at a constant speed, but with it the jump height is random. ???
+        self.fallVel += self.yTimer.elapsedTime()*-3000
+        self.yVel = self.yTimer.elapsedTime()*(self.fallVel + self.jumpVel) 
         self.yTimer.reset()
         return self.yVel
     def getZDisplacement(self):
@@ -60,8 +60,12 @@ class kinematicsClass:
         player.setPose(self.playerX, self.playerY, self.playerZ)
         if py3D.touching(player.hitbox):
             while py3D.touching(player.hitbox):
-                self.playerX += -0.1*self.vectoredXVel/abs(self.vectoredXVel)
+                self.playerX += -0.01*self.vectoredXVel/abs(self.vectoredXVel)
                 player.setPose(self.playerX, self.playerY, self.playerZ)
+            self.dKey.reset()
+            self.aKey.reset()
+            self.wKey.reset()
+            self.sKey.reset()   
         self.playerY += self.yVel
         player.setPose(self.playerX, self.playerY, self.playerZ)
         self.onGround = False
@@ -73,13 +77,17 @@ class kinematicsClass:
                 self.onGround = True
             self.fallVel = 0
             self.jumpVel = 0
+            self.yTimer.reset()
         self.playerZ += self.vectoredZVel
         player.setPose(self.playerX, self.playerY, self.playerZ)
         if py3D.touching(player.hitbox):
             while py3D.touching(player.hitbox):
-                self.playerZ += -0.1*self.vectoredZVel/abs(self.vectoredZVel)
+                self.playerZ += -0.01*self.vectoredZVel/abs(self.vectoredZVel)
                 player.setPose(self.playerX, self.playerY, self.playerZ)
-        return
+            self.dKey.reset()
+            self.aKey.reset()
+            self.wKey.reset()
+            self.sKey.reset()
     def reset(self):
         self.dKey.reset()
         self.aKey.reset()

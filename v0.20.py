@@ -22,7 +22,6 @@ py3D.renderData.setViewbox(600)
 
 randomObjs = []
 floor = py3D.cuboid(0, 0, 0, 500, 0, 500, "terrain")
-jumpMeasurer = py3D.cuboid(0, 75, -50, 10, 10, 10, "terrain")
 player = playerObject()
 
 for i in range(50):
@@ -79,6 +78,7 @@ yVel = 0.1
 zVel = 0.1
 pitchVel = 0
 yawVel  = 0
+vectoredVel = [0, 0]
 timer = timer()
 
 # setting up display
@@ -120,7 +120,7 @@ def displayAll():
     global loops
     global text_surface
     screen.fill(WHITE)
-    py3D.renderData.update(kinematicsThread.playerX+100*math.cos(pitch)*math.cos(yaw-1.5708), kinematicsThread.playerY+100*-math.sin(pitch), kinematicsThread.playerZ+100*math.cos(pitch)*math.sin(yaw-1.5708), pitch, yaw)
+    py3D.renderData.update(playerX+100*math.cos(pitch)*math.cos(yaw-1.5708), playerY+100*-math.sin(pitch), playerZ+100*math.cos(pitch)*math.sin(yaw-1.5708), pitch, yaw)
     py3D.displayObjects(color=BLACK, objectType=(types.player, types.terrain))
     pygame.draw.rect(screen, WHITE, [0, 0, 100, 50])
     if timer.elapsedTime() > 1:
@@ -139,13 +139,70 @@ while True:
     xVel = kinematicsThread.getXDisplacement()
     zVel = kinematicsThread.getZDisplacement()
     yVel = kinematicsThread.getYDisplacement()
-    
-    kinematicsThread.vectorXZ(yaw)
-    kinematicsThread.collide(player)
 
     yawVel = kinematicsThread.getYawDisplacement()
     pitchVel = kinematicsThread.getPitchDisplacement()  
 
+    vectoredVel[0] = round(xVel * math.cos(yaw) + zVel * math.cos(yaw+1.5708), 5)
+    vectoredVel[1] = round(xVel * math.sin(yaw) + zVel * math.sin(yaw+1.5708), 5)
+
+    py3D.renderData.update(camX, camY, camZ, pitch, yaw)
+ 
+    playerX += round(vectoredVel[0], 2)
+    player.setPose(playerX, playerY, playerZ)
+    if py3D.touching(player.hitbox):
+        correctX()
+    playerY += round(yVel, 1)
+    if playerY < -200:
+        if not falling:
+            i = 0
+        i+=0.1
+        falling = True
+        yawVel = 0.01*math.sin(i) + 0.01*i
+        pitchVel = 0.01*math.sin(i) + 0.01*i
+    if playerY < -3750:
+        yawVel = 0
+        if playerZ == 0:
+            yaw = 1.5708
+        else:
+            yaw = math.atan((playerX)/(playerZ))
+        if math.sqrt(playerX**2+playerZ**2) == 0:
+            pitch = 1.5708
+        else:
+            pitch = -math.atan((playerY-50)/math.sqrt(playerX**2+playerZ**2))
+        rectWidth = 0
+        while rectWidth < 900:
+            rectWidth += (905-rectWidth)/100
+            pygame.draw.rect(screen, BLACK, [0, 0, rectWidth, 600])
+            pygame.display.update()
+            tick()
+        time.sleep(2)
+        while abs(51-playerY) > 1.1:
+            playerX += (0-playerX)/30
+            playerY += (50-playerY)/30
+            playerZ += (0-playerZ)/30
+            player.setPose(playerX, playerY, playerZ)
+            displayAll()
+            tick()
+        while abs(0-yaw) > 0.01:
+            yaw += (0-yaw)/85
+            pitch += (0-pitch)/85
+            displayAll()
+            tick()
+        kinematicsThread.reset()
+        yVel = 0
+        yawVel = 0
+        pitchVel = 0
+        falling = False
+    player.setPose(playerX, playerY, playerZ)
+    if py3D.touching(player.hitbox):
+        correctY()
+    playerZ += round(vectoredVel[1], 2)
+    player.setPose(playerX, playerY, playerZ)
+    if py3D.touching(player.hitbox):
+        correctZ()
+
+    player.setPose(playerX, playerY, playerZ)    
     yaw += yawVel
     pitch += pitchVel
     loops+=1
