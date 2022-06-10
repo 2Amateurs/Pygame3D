@@ -82,10 +82,10 @@ def checkForExit():
             sys.exit()
 
 #play music!!!
-mixer.init()
-mixer.music.load("./Music/elevator.wav")
-mixer.music.set_volume(0.7)
-mixer.music.play()
+#mixer.init()
+#mixer.music.load("./Music/elevator.wav")
+#mixer.music.set_volume(0.7)
+#mixer.music.play()
 
 # Beginning Game Loop
 while True:
