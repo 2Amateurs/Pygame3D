@@ -27,16 +27,15 @@ class kinematicsClass:
         self.playerX = 0
         self.playerY = 50
         self.playerZ = 0
-        self.onGround = False
     def getXDisplacement(self):
         pressed = pygame.key.get_pressed()
         self.xVel = 100*self.dKey.getActiveTime(pressed)-100*self.aKey.getActiveTime(pressed)
         return self.xVel
     def getYDisplacement(self):
+        if self.playerY < -1500:
+            self.die()
         pressed = pygame.key.get_pressed()
-        if pressed[pygame.K_SPACE] and self.onGround:
-            self.jumpVel = 700
-        self.fallVel += self.yTimer.elapsedTime()*-3000
+        self.fallVel += self.yTimer.elapsedTime()*-2000
         self.yVel = self.yTimer.elapsedTime()*(self.fallVel + self.jumpVel) 
         self.yTimer.reset()
         return self.yVel
@@ -56,11 +55,16 @@ class kinematicsClass:
         self.vectoredXVel = round(self.xVel * math.cos(yaw) + self.zVel * math.cos(yaw+1.5708), 5)
         self.vectoredZVel = round(self.xVel * math.sin(yaw) + self.zVel * math.sin(yaw+1.5708), 5)
     def collide(self, player):
+        pressed = pygame.key.get_pressed()
         self.playerX += self.vectoredXVel
         player.setPose(self.playerX, self.playerY, self.playerZ)
         if py3D.touching(player.hitbox):
             while py3D.touching(player.hitbox):
-                self.playerX += -0.01*self.vectoredXVel/abs(self.vectoredXVel)
+                item = py3D.cuboidRegistry.registry[py3D.cuboidRegistry.touchingID]
+                if self.vectoredXVel > 0:
+                    self.playerX += (item.x-item.width/2)-(player.hitbox.x+player.hitbox.width/2)
+                else:
+                    self.playerX += (item.x+item.width/2)-(player.hitbox.x-player.hitbox.width/2)
                 player.setPose(self.playerX, self.playerY, self.playerZ)
             self.dKey.reset()
             self.aKey.reset()
@@ -68,21 +72,29 @@ class kinematicsClass:
             self.sKey.reset()   
         self.playerY += self.yVel
         player.setPose(self.playerX, self.playerY, self.playerZ)
-        self.onGround = False
         if py3D.touching(player.hitbox):
             while py3D.touching(player.hitbox):
-                self.playerY += -0.01*self.yVel/abs(self.yVel)
+                item = py3D.cuboidRegistry.registry[py3D.cuboidRegistry.touchingID]
+                if self.yVel > 0:
+                    self.playerY += (item.y-item.height/2)-(player.hitbox.y+player.hitbox.height/2)
+                else:
+                    self.playerY += (item.y+item.height/2)-(player.hitbox.y-player.hitbox.height/2)
                 player.setPose(self.playerX, self.playerY, self.playerZ)
-            if self.yVel < 0:
-                self.onGround = True
             self.fallVel = 0
-            self.jumpVel = 0
+            if pressed[pygame.K_SPACE] and self.yVel < 0:
+                self.jumpVel = 700
+            else:
+                self.jumpVel = 0
             self.yTimer.reset()
         self.playerZ += self.vectoredZVel
         player.setPose(self.playerX, self.playerY, self.playerZ)
         if py3D.touching(player.hitbox):
             while py3D.touching(player.hitbox):
-                self.playerZ += -0.01*self.vectoredZVel/abs(self.vectoredZVel)
+                item = py3D.cuboidRegistry.registry[py3D.cuboidRegistry.touchingID]
+                if self.vectoredZVel > 0:
+                    self.playerZ += (item.z-item.depth/2)-(player.hitbox.z+player.hitbox.depth/2)
+                else:
+                    self.playerZ += (item.z+item.depth/2)-(player.hitbox.z-player.hitbox.depth/2)
                 player.setPose(self.playerX, self.playerY, self.playerZ)
             self.dKey.reset()
             self.aKey.reset()
@@ -98,3 +110,8 @@ class kinematicsClass:
         self.upKey.reset()
         self.downKey.reset()
         self.yTimer.reset()
+    def die(self):
+        self.playerX = 0
+        self.playerY = 50
+        self.playerZ = 0
+        self.reset()

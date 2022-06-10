@@ -72,13 +72,14 @@ class point:
         self.zRelative = self.rotationValues[2]
         return self
     def projectTo2D(self):
-        self.xProjected = renderData.screenWidth/2 + (renderData.viewbox*self.xRelative)/((self.zRelative)*renderData.FOVconst)
-        self.yProjected = renderData.screenHeight/2 - (renderData.viewbox*self.yRelative)/((self.zRelative)*renderData.FOVconst)
+        self.xProjected = (renderData.screenWidth/2 + (renderData.viewbox*self.xRelative)/((self.zRelative)*renderData.FOVconst))
+        self.yProjected = (renderData.screenHeight/2 - (renderData.viewbox*self.yRelative)/((self.zRelative)*renderData.FOVconst))
         if self.zRelative < 0:
             self.xProjected = None
 class cuboidRegistry:
     def __init__(self):
         self.registry = []
+        self.touchingID = 0
 cuboidRegistry = cuboidRegistry()
 class cuboid:
     def setPoints(self):
@@ -137,9 +138,12 @@ class cuboid:
         return (objectX + objectWidth/2 > self.x-self.width/2) and (objectX - objectWidth/2 < self.x+self.width/2) and (objectY + objectHeight/2 > self.y-self.height/2) and (objectY - objectHeight/2 < self.y+self.height/2) and (objectZ + objectDepth/2 > self.z-self.depth/2) and (objectZ - objectDepth/2 < self.z+self.depth/2)
 def touching(hitbox):
     touching = False
+    i = 0
     for item in cuboidRegistry.registry:
         if item.contact(hitbox.x, hitbox.y, hitbox.z, hitbox.width, hitbox.height, hitbox.depth) and not (item.objectType == 'player' or item is hitbox):
             touching = True
+            cuboidRegistry.touchingID = i
+        i+=1
     return touching
 def displayObjects(color, objectType):
     for item in cuboidRegistry.registry:
